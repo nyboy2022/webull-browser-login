@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Webull Browser Login</title>
+<style nonce="__TOKEN__">
+body{font:16px/1.65 system-ui,sans-serif;max-width:760px;margin:60px auto;padding:0 24px;color:#19283a;background:#f4f7fa}main{background:white;padding:32px;border:1px solid #d3dce5;border-radius:12px}h1{line-height:1.2}button{font:inherit;padding:10px 16px;margin:6px 6px 6px 0;cursor:pointer}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#eef2f6;padding:16px}#message{min-height:2em}button:disabled{cursor:wait}
+</style></head><body><main><h1>Webull Browser Login</h1>
+<p>在独立浏览器中亲自登录并完成 MFA。凭证保存在本机，网页只显示脱敏状态。</p>
+<p lang="en">Sign in and complete MFA in the separate browser. Credentials stay on this computer.</p>
+<button id="start">登录 / Sign in</button><button id="cancel" disabled>取消 / Cancel</button>
+<button id="accounts">查询账户 / Check accounts</button>
+<p id="message" role="status" aria-live="polite"></p><pre id="state">正在读取状态…</pre>
+<p>不提供下单功能。交易 PIN 授权请使用独立终端示例。关闭服务：终端按 Ctrl+C。</p>
+</main><script nonce="__TOKEN__">
+const token = '__TOKEN__';
+const message = document.querySelector('#message');
+async function api(action) {
+  const response = await fetch('/api/' + action, {method:'POST',headers:{'X-Operation-Token':token}});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error);
+  return data;
+}
+let busy = false;
+async function refresh() {
+  if (busy) return;
+  busy = true;
+  try {
+    const data = await api('status');
+    document.querySelector('#state').textContent = JSON.stringify(data, null, 2);
+    document.querySelector('#start').disabled = data.login.active;
+    document.querySelector('#cancel').disabled = !data.login.active;
+    document.querySelector('#accounts').disabled = data.login.active || !data.credentials.device_ready;
+  } catch (error) { message.textContent = error.message; }
+  finally { busy = false; }
+}
+for (const action of ['start','cancel','accounts']) {
+  document.querySelector('#' + action).addEventListener('click', async () => {
+    try { message.textContent = JSON.stringify(await api(action), null, 2); }
+    catch (error) { message.textContent = error.message; }
+    await refresh();
+  });
+}
+refresh(); setInterval(refresh, 1000);
+</script></body></html>

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "webull-browser-login"
+version = "0.1.0"
+description = "User-driven, isolated browser login for unofficial Webull Python sessions"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "nyboy2022"}]
+dependencies = ["playwright==1.60.0", "webull==0.6.1", "requests>=2.32.3,<3"]
+
+[project.urls]
+Repository = "https://github.com/nyboy2022/webull-browser-login"
+
+[project.scripts]
+webull-browser-login = "webull_browser_login.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["webull_browser_login*"]
+
+[tool.setuptools.package-data]
+webull_browser_login = ["index.html"]
